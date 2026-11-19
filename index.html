@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ค้นหาและสำรวจบัญชีรายการยาของร้านยาจำลอง">
+  <title>บัญชีรายการยา | Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Leelawadee UI", system-ui, sans-serif;
+      color: #182a35;
+      background: #f2f6f5;
+      --surface: #fff;
+      --line: #dce6e4;
+      --muted: #506670;
+      --accent: #086958;
+      --accent-soft: #e5f4ee;
+      --radius: 18px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-size: 1rem; line-height: 1.55; }
+    button, input, select { font: inherit; }
+    button, select { cursor: pointer; }
+    :focus-visible { outline: 3px solid #b87521; outline-offset: 3px; }
+    [hidden] { display: none !important; }
+    .container { width: min(1440px, 100%); margin-inline: auto; padding-inline: clamp(16px, 4vw, 56px); }
+    .topbar { background: #112e32; color: #fff; }
+    .topbar .container, .brand { display: flex; align-items: center; gap: 12px; }
+    .topbar .container { justify-content: space-between; min-height: 68px; padding-block: 12px; flex-wrap: wrap; }
+    .brand { font-weight: 700; }
+    .brand-mark {
+      display: grid; place-items: center; width: 34px; height: 34px; color: #133630;
+      background: #b7edd7; border-radius: 10px; font: 700 1.45rem/1 system-ui;
+    }
+    .source-tag { border: 1px solid #49716e; color: #d1eae4; padding: 4px 11px; border-radius: 8px; font-size: .875rem; }
+    main { padding-block: clamp(24px, 4vw, 52px); }
+    .intro { margin-bottom: 24px; }
+    .intro h1 { margin: 0 0 6px; font-size: clamp(1.75rem, 4vw, 2.65rem); line-height: 1.2; }
+    .intro p, .muted { margin: 0; color: var(--muted); }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 0 0 22px; }
+    .metric {
+      display: flex; flex-direction: column; padding: 16px 19px; margin: 0;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    }
+    .metric:first-child { color: #fff; background: #136658; border-color: #136658; }
+    .metric dt { color: var(--muted); font-size: .875rem; }
+    .metric:first-child dt { color: #def5ed; }
+    .metric dd { margin: 2px 0 0; font: 680 clamp(1.7rem, 3vw, 2.3rem)/1.2 system-ui; font-variant-numeric: tabular-nums; }
+    .workspace { display: grid; grid-template-columns: minmax(230px, 290px) minmax(0, 1fr); align-items: start; gap: 18px; }
+    .panel {
+      min-width: 0; border: 1px solid var(--line); border-radius: var(--radius);
+      background: var(--surface); box-shadow: 0 6px 20px #122f3208;
+    }
+    .panel-header { padding: 19px 20px 14px; }
+    .panel-header h2 { margin: 0; font-size: 1.15rem; }
+    .panel-header .muted { margin-top: 3px; font-size: .875rem; }
+    .chart { padding: 0 12px 14px; }
+    .bar {
+      display: grid; gap: 4px; width: 100%; padding: 7px 8px; text-align: left;
+      background: transparent; color: inherit; border: 1px solid transparent; border-radius: 9px;
+    }
+    .bar:hover, .bar[aria-pressed="true"] { background: var(--accent-soft); }
+    .bar[aria-pressed="true"] { border-color: #62a997; }
+    .bar-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: .875rem; }
+    .bar-number { color: #176556; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .bar-track { display: block; height: 5px; border-radius: 10px; background: #e5eeeb; overflow: hidden; }
+    .bar-fill { display: block; height: 100%; border-radius: inherit; background: #53a892; }
+    .bar[aria-pressed="true"] .bar-fill { background: var(--accent); }
+    .filter-bar {
+      display: grid; grid-template-columns: minmax(160px, 1.5fr) minmax(145px, 1fr) minmax(130px, 1fr) auto;
+      gap: 10px; align-items: end; padding: 0 20px 14px;
+    }
+    .field { min-width: 0; }
+    .field label { display: block; margin-bottom: 4px; font-size: .875rem; font-weight: 650; }
+    .field input, .field select {
+      width: 100%; min-width: 0; height: 42px; background: #f8faf9; color: #182a35;
+      border: 1px solid #c6d7d3; border-radius: 9px; padding-inline: 10px;
+      font-size: .875rem;
+    }
+    .field select {
+      appearance: none; padding-right: 29px;
+      background-image: linear-gradient(45deg, transparent 50%, #476461 50%), linear-gradient(135deg, #476461 50%, transparent 50%);
+      background-position: calc(100% - 15px) 18px, calc(100% - 10px) 18px;
+      background-size: 5px 5px; background-repeat: no-repeat;
+    }
+    .button {
+      min-height: 42px; padding: 6px 12px; border: 1px solid #c6d7d3; border-radius: 9px;
+      white-space: nowrap; background: #fff; color: #245450; font-size: .875rem; font-weight: 650;
+    }
+    .button:not(:disabled):hover { background: var(--accent-soft); border-color: #83ad9f; }
+    .button:disabled { color: #63767b; background: #f4f7f6; cursor: default; }
+    .table-scroll { overflow: auto; border-block: 1px solid var(--line); }
+    .table-scroll:focus-visible { outline-offset: -3px; }
+    table { width: 100%; min-width: 710px; border-collapse: collapse; text-align: left; font-size: .875rem; }
+    th, td { padding: 9px 12px; vertical-align: middle; }
+    thead th { color: #35555b; background: #ecf4f1; font-weight: 650; white-space: nowrap; }
+    th:first-child, td:first-child { padding-left: 20px; }
+    th:last-child, td:last-child { padding-right: 20px; }
+    tbody tr + tr { border-top: 1px solid #edf1f0; }
+    tbody tr:hover { background: #f5faf7; }
+    .sku { color: #1e6155; font-family: ui-monospace, Consolas, monospace; font-size: .8rem; font-weight: 700; }
+    .drug-name { font-weight: 650; }
+    .code, .quantity { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .quantity { text-align: right; }
+    .table-empty { text-align: center; color: var(--muted); padding: 34px 20px; }
+    .pagination { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; padding: 12px 20px; gap: 8px 14px; }
+    .pagination p { margin: 0; color: var(--muted); font-size: .875rem; }
+    .page-buttons { display: flex; align-items: center; gap: 8px; }
+    .page-buttons p { white-space: nowrap; }
+    .dataset-note { margin: 18px 0 0; color: var(--muted); font-size: .875rem; }
+    .error { padding: 15px 20px; border: 1px solid #c6825d; background: #fff2e9; border-radius: 10px; }
+    @media (max-width: 1190px) {
+      .filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .filter-bar .button { justify-self: start; }
+    }
+    @media (max-width: 820px) {
+      .workspace { grid-template-columns: minmax(0, 1fr); }
+      .chart { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 8px; }
+    }
+    @media (max-width: 440px) {
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+      .metric { padding: 12px; }
+      .chart { grid-template-columns: minmax(0, 1fr); }
+      .filter-bar { padding-inline: 14px; }
+      .field:first-child { grid-column: 1 / -1; }
+      .pagination { padding-inline: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">+</span> บัญชีรายการยา</div>
+      <span class="source-tag">ร้านยาจำลอง</span>
+    </div>
+  </header>
+  <main class="container">
+    <div class="intro">
+      <h1 id="dashboard-title">บัญชีรายการยาของร้านยาจำลอง</h1>
+      <p>สำรวจรายการยาตามหมวด หรือค้นหาด้วยชื่อสามัญ รหัส SKU และรหัส ATC</p>
+    </div>
+    <p class="error" id="load-error" role="alert" hidden>อ่านข้อมูลรายการยาไม่ได้ กรุณาตรวจสอบไฟล์ drugs.json</p>
+    <noscript><p class="error">กรุณาเปิดใช้งาน JavaScript เพื่อดูบัญชีรายการยา</p></noscript>
+    <div id="dashboard" hidden>
+      <dl class="metrics" aria-label="ภาพรวมบัญชีรายการยา">
+        <div class="metric"><dt>รายการยา (SKU)</dt><dd id="metric-skus"></dd></div>
+        <div class="metric"><dt>ชื่อสามัญ</dt><dd id="metric-names"></dd></div>
+        <div class="metric"><dt>หมวดหมู่</dt><dd id="metric-categories"></dd></div>
+        <div class="metric"><dt>รูปแบบยา</dt><dd id="metric-forms"></dd></div>
+      </dl>
+      <div class="workspace">
+        <section class="panel" aria-labelledby="category-heading">
+          <div class="panel-header">
+            <h2 id="category-heading">รายการแยกตามหมวด</h2>
+            <p class="muted">จำนวน SKU ทั้งหมด กดที่หมวดเพื่อกรองตาราง</p>
+          </div>
+          <div class="chart" id="category-chart"></div>
+        </section>
+        <section class="panel" aria-labelledby="catalog-heading">
+          <div class="panel-header">
+            <h2 id="catalog-heading">รายการยา</h2>
+          </div>
+          <form class="filter-bar" id="filters" role="search" aria-label="ค้นหาและกรองรายการยา" autocomplete="off">
+            <div class="field">
+              <label for="search">ค้นหา</label>
+              <input id="search" type="search" placeholder="ชื่อยา รหัส SKU หรือ ATC">
+            </div>
+            <div class="field">
+              <label for="category">หมวดหมู่</label>
+              <select id="category"><option value="">ทุกหมวดหมู่</option></select>
+            </div>
+            <div class="field">
+              <label for="dosage-form">รูปแบบยา</label>
+              <select id="dosage-form"><option value="">ทุกรูปแบบ</option></select>
+            </div>
+            <button class="button" type="reset">ล้างตัวกรอง</button>
+          </form>
+          <div class="table-scroll" role="region" tabindex="0" aria-label="ตารางรายการยา เลื่อนแนวนอนได้">
+            <table aria-labelledby="catalog-heading">
+              <thead>
+                <tr>
+                  <th scope="col">SKU</th><th scope="col">ชื่อสามัญ</th><th scope="col">ความแรง</th>
+                  <th scope="col">รูปแบบยา</th><th scope="col">หมวดหมู่</th><th scope="col">รหัส ATC</th>
+                  <th scope="col" class="quantity">จุดสั่งซื้อซ้ำ</th>
+                </tr>
+              </thead>
+              <tbody id="drug-rows"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <p id="result-count" role="status"></p>
+            <div class="page-buttons">
+              <button class="button" type="button" id="previous">ก่อนหน้า</button>
+              <p id="page-number"></p>
+              <button class="button" type="button" id="next">ถัดไป</button>
+            </div>
+          </div>
+        </section>
+      </div>
+      <p class="dataset-note"><strong>จุดสั่งซื้อซ้ำ</strong> เป็นค่าตามนโยบายสมมติของร้าน ไฟล์นี้ไม่มีข้อมูลจำนวนคงเหลือ</p>
+    </div>
+  </main>
+  <script id="bundled-data" type="application/json">{"meta":{"title":"บัญชีรายการยาของร้านยาจำลอง","note":"ชื่อสามัญ ความแรง รูปแบบยา และรหัส ATC เป็นข้อมูลจริง (รหัส ATC ตรวจกับ WHO ATC/DDD Index ฉบับ 2026); reorder_level เป็นนโยบายสมมติของร้าน","categories":["แก้ปวดและต้านการอักเสบ","ยาปฏิชีวนะ","ต้านเชื้อรา ไวรัส และพยาธิ","หัวใจและความดันโลหิต","เบาหวาน","ไขมันในเลือด","ทางเดินอาหาร","แก้แพ้","ทางเดินหายใจ","ผิวหนัง","ตาและหู","วิตามินและเกลือแร่","ระบบประสาท","ข้อและกล้ามเนื้อ"],"count":100},"items":[{"sku":"PARA500","generic_name":"Paracetamol","strength":"500 mg","dosage_form":"tablet","unit":"tablet","category":"แก้ปวดและต้านการอักเสบ","atc_code":"N02BE01","reorder_level":500},{"sku":"PARA120S","generic_name":"Paracetamol","strength":"120 mg/5 mL, 60 mL","dosage_form":"syrup","unit":"bottle","category":"แก้ปวดและต้านการอักเสบ","atc_code":"N02BE01","reorder_level":20},{"sku":"IBU400","generic_name":"Ibuprofen","strength":"400 mg","dosage_form":"tablet","unit":"tablet","category":"แก้ปวดและต้านการอักเสบ","atc_code":"M01AE01","reorder_level":300},{"sku":"IBU100S","generic_name":"Ibuprofen","strength":"100 mg/5 mL, 60 mL","dosage_form":"suspension","unit":"bottle","category":"แก้ปวดและต้านการอักเสบ","atc_code":"M01AE01","reorder_level":10},{"sku":"NAPRO250","generic_name":"Naproxen","strength":"250 mg","dosage_form":"tablet","unit":"tablet","category":"แก้ปวดและต้านการอักเสบ","atc_code":"M01AE02","reorder_level":100},{"sku":"DICLO25","generic_name":"Diclofenac sodium","strength":"25 mg","dosage_form":"tablet","unit":"tablet","category":"แก้ปวดและต้านการอักเสบ","atc_code":"M01AB05","reorder_level":200},{"sku":"DICLOGEL","generic_name":"Diclofenac diethylamine","strength":"1%, 30 g","dosage_form":"gel","unit":"tube","category":"แก้ปวดและต้านการอักเสบ","atc_code":"M02AA15","reorder_level":10},{"sku":"MEFE250","generic_name":"Mefenamic acid","strength":"250 mg","dosage_form":"capsule","unit":"capsule","category":"แก้ปวดและต้านการอักเสบ","atc_code":"M01AG01","reorder_level":200},{"sku":"CELE200","generic_name":"Celecoxib","strength":"200 mg","dosage_form":"capsule","unit":"capsule","category":"แก้ปวดและต้านการอักเสบ","atc_code":"M01AH01","reorder_level":60},{"sku":"AMOX500","generic_name":"Amoxicillin","strength":"500 mg","dosage_form":"capsule","unit":"capsule","category":"ยาปฏิชีวนะ","atc_code":"J01CA04","reorder_level":300},{"sku":"AMOX125S","generic_name":"Amoxicillin","strength":"125 mg/5 mL, 60 mL","dosage_form":"dry syrup","unit":"bottle","category":"ยาปฏิชีวนะ","atc_code":"J01CA04","reorder_level":10},{"sku":"AMCLAV875","generic_name":"Amoxicillin/Clavulanic acid","strength":"875/125 mg","dosage_form":"tablet","unit":"tablet","category":"ยาปฏิชีวนะ","atc_code":"J01CR02","reorder_level":60},{"sku":"DICLOX250","generic_name":"Dicloxacillin","strength":"250 mg","dosage_form":"capsule","unit":"capsule","category":"ยาปฏิชีวนะ","atc_code":"J01CF01","reorder_level":200},{"sku":"CEPH500","generic_name":"Cephalexin","strength":"500 mg","dosage_form":"capsule","unit":"capsule","category":"ยาปฏิชีวนะ","atc_code":"J01DB01","reorder_level":200},{"sku":"AZI250","generic_name":"Azithromycin","strength":"250 mg","dosage_form":"tablet","unit":"tablet","category":"ยาปฏิชีวนะ","atc_code":"J01FA10","reorder_level":60},{"sku":"DOXY100","generic_name":"Doxycycline","strength":"100 mg","dosage_form":"capsule","unit":"capsule","category":"ยาปฏิชีวนะ","atc_code":"J01AA02","reorder_level":100},{"sku":"NORF400","generic_name":"Norfloxacin","strength":"400 mg","dosage_form":"tablet","unit":"tablet","category":"ยาปฏิชีวนะ","atc_code":"J01MA06","reorder_level":100},{"sku":"CIPRO500","generic_name":"Ciprofloxacin","strength":"500 mg","dosage_form":"tablet","unit":"tablet","category":"ยาปฏิชีวนะ","atc_code":"J01MA02","reorder_level":100},{"sku":"COTRI480","generic_name":"Sulfamethoxazole/Trimethoprim","strength":"400/80 mg","dosage_form":"tablet","unit":"tablet","category":"ยาปฏิชีวนะ","atc_code":"J01EE01","reorder_level":100},{"sku":"NITRO100","generic_name":"Nitrofurantoin","strength":"100 mg","dosage_form":"capsule","unit":"capsule","category":"ยาปฏิชีวนะ","atc_code":"J01XE01","reorder_level":60},{"sku":"METRO400","generic_name":"Metronidazole","strength":"400 mg","dosage_form":"tablet","unit":"tablet","category":"ต้านเชื้อรา ไวรัส และพยาธิ","atc_code":"P01AB01","reorder_level":100},{"sku":"FLUCO150","generic_name":"Fluconazole","strength":"150 mg","dosage_form":"capsule","unit":"capsule","category":"ต้านเชื้อรา ไวรัส และพยาธิ","atc_code":"J02AC01","reorder_level":30},{"sku":"CLOTRI-C","generic_name":"Clotrimazole","strength":"1%, 15 g","dosage_form":"cream","unit":"tube","category":"ต้านเชื้อรา ไวรัส และพยาธิ","atc_code":"D01AC01","reorder_level":20},{"sku":"KETO-C","generic_name":"Ketoconazole","strength":"2%, 15 g","dosage_form":"cream","unit":"tube","category":"ต้านเชื้อรา ไวรัส และพยาธิ","atc_code":"D01AC08","reorder_level":10},{"sku":"ACYC400","generic_name":"Acyclovir","strength":"400 mg","dosage_form":"tablet","unit":"tablet","category":"ต้านเชื้อรา ไวรัส และพยาธิ","atc_code":"J05AB01","reorder_level":100},{"sku":"ACYC-C","generic_name":"Acyclovir","strength":"5%, 5 g","dosage_form":"cream","unit":"tube","category":"ต้านเชื้อรา ไวรัส และพยาธิ","atc_code":"D06BB03","reorder_level":10},{"sku":"ALBEN200","generic_name":"Albendazole","strength":"200 mg","dosage_form":"tablet","unit":"tablet","category":"ต้านเชื้อรา ไวรัส และพยาธิ","atc_code":"P02CA03","reorder_level":50},{"sku":"MEBEN100","generic_name":"Mebendazole","strength":"100 mg","dosage_form":"tablet","unit":"tablet","category":"ต้านเชื้อรา ไวรัส และพยาธิ","atc_code":"P02CA01","reorder_level":50},{"sku":"NYST-S","generic_name":"Nystatin","strength":"100,000 U/mL, 12 mL","dosage_form":"oral suspension","unit":"bottle","category":"ต้านเชื้อรา ไวรัส และพยาธิ","atc_code":"A07AA02","reorder_level":5},{"sku":"AMLO5","generic_name":"Amlodipine","strength":"5 mg","dosage_form":"tablet","unit":"tablet","category":"หัวใจและความดันโลหิต","atc_code":"C08CA01","reorder_level":300},{"sku":"AMLO10","generic_name":"Amlodipine","strength":"10 mg","dosage_form":"tablet","unit":"tablet","category":"หัวใจและความดันโลหิต","atc_code":"C08CA01","reorder_level":200},{"sku":"ENAL5","generic_name":"Enalapril","strength":"5 mg","dosage_form":"tablet","unit":"tablet","category":"หัวใจและความดันโลหิต","atc_code":"C09AA02","reorder_level":200},{"sku":"LOSAR50","generic_name":"Losartan","strength":"50 mg","dosage_form":"tablet","unit":"tablet","category":"หัวใจและความดันโลหิต","atc_code":"C09CA01","reorder_level":300},{"sku":"HCTZ25","generic_name":"Hydrochlorothiazide","strength":"25 mg","dosage_form":"tablet","unit":"tablet","category":"หัวใจและความดันโลหิต","atc_code":"C03AA03","reorder_level":200},{"sku":"ATEN50","generic_name":"Atenolol","strength":"50 mg","dosage_form":"tablet","unit":"tablet","category":"หัวใจและความดันโลหิต","atc_code":"C07AB03","reorder_level":200},{"sku":"PROP10","generic_name":"Propranolol","strength":"10 mg","dosage_form":"tablet","unit":"tablet","category":"หัวใจและความดันโลหิต","atc_code":"C07AA05","reorder_level":200},{"sku":"FURO40","generic_name":"Furosemide","strength":"40 mg","dosage_form":"tablet","unit":"tablet","category":"หัวใจและความดันโลหิต","atc_code":"C03CA01","reorder_level":100},{"sku":"SPIRO25","generic_name":"Spironolactone","strength":"25 mg","dosage_form":"tablet","unit":"tablet","category":"หัวใจและความดันโลหิต","atc_code":"C03DA01","reorder_level":100},{"sku":"ISDN5","generic_name":"Isosorbide dinitrate","strength":"5 mg","dosage_form":"sublingual tablet","unit":"tablet","category":"หัวใจและความดันโลหิต","atc_code":"C01DA08","reorder_level":100},{"sku":"ASA81","generic_name":"Aspirin","strength":"81 mg","dosage_form":"tablet","unit":"tablet","category":"หัวใจและความดันโลหิต","atc_code":"B01AC06","reorder_level":300},{"sku":"CLOP75","generic_name":"Clopidogrel","strength":"75 mg","dosage_form":"tablet","unit":"tablet","category":"หัวใจและความดันโลหิต","atc_code":"B01AC04","reorder_level":100},{"sku":"WARF3","generic_name":"Warfarin","strength":"3 mg","dosage_form":"tablet","unit":"tablet","category":"หัวใจและความดันโลหิต","atc_code":"B01AA03","reorder_level":60},{"sku":"METF500","generic_name":"Metformin","strength":"500 mg","dosage_form":"tablet","unit":"tablet","category":"เบาหวาน","atc_code":"A10BA02","reorder_level":500},{"sku":"METF850","generic_name":"Metformin","strength":"850 mg","dosage_form":"tablet","unit":"tablet","category":"เบาหวาน","atc_code":"A10BA02","reorder_level":300},{"sku":"GLIP5","generic_name":"Glipizide","strength":"5 mg","dosage_form":"tablet","unit":"tablet","category":"เบาหวาน","atc_code":"A10BB07","reorder_level":200},{"sku":"GLIC80","generic_name":"Gliclazide","strength":"80 mg","dosage_form":"tablet","unit":"tablet","category":"เบาหวาน","atc_code":"A10BB09","reorder_level":200},{"sku":"GLIB5","generic_name":"Glibenclamide","strength":"5 mg","dosage_form":"tablet","unit":"tablet","category":"เบาหวาน","atc_code":"A10BB01","reorder_level":200},{"sku":"SIMVA20","generic_name":"Simvastatin","strength":"20 mg","dosage_form":"tablet","unit":"tablet","category":"ไขมันในเลือด","atc_code":"C10AA01","reorder_level":300},{"sku":"ATOR20","generic_name":"Atorvastatin","strength":"20 mg","dosage_form":"tablet","unit":"tablet","category":"ไขมันในเลือด","atc_code":"C10AA05","reorder_level":200},{"sku":"ROSU10","generic_name":"Rosuvastatin","strength":"10 mg","dosage_form":"tablet","unit":"tablet","category":"ไขมันในเลือด","atc_code":"C10AA07","reorder_level":100},{"sku":"GEMF600","generic_name":"Gemfibrozil","strength":"600 mg","dosage_form":"tablet","unit":"tablet","category":"ไขมันในเลือด","atc_code":"C10AB04","reorder_level":100},{"sku":"OMEP20","generic_name":"Omeprazole","strength":"20 mg","dosage_form":"capsule","unit":"capsule","category":"ทางเดินอาหาร","atc_code":"A02BC01","reorder_level":300},{"sku":"PANTO40","generic_name":"Pantoprazole","strength":"40 mg","dosage_form":"tablet","unit":"tablet","category":"ทางเดินอาหาร","atc_code":"A02BC02","reorder_level":100},{"sku":"FAMO20","generic_name":"Famotidine","strength":"20 mg","dosage_form":"tablet","unit":"tablet","category":"ทางเดินอาหาร","atc_code":"A02BA03","reorder_level":100},{"sku":"SIMET80","generic_name":"Simethicone","strength":"80 mg","dosage_form":"chewable tablet","unit":"tablet","category":"ทางเดินอาหาร","atc_code":"A03AX13","reorder_level":100},{"sku":"DOMP10","generic_name":"Domperidone","strength":"10 mg","dosage_form":"tablet","unit":"tablet","category":"ทางเดินอาหาร","atc_code":"A03FA03","reorder_level":200},{"sku":"METOC10","generic_name":"Metoclopramide","strength":"10 mg","dosage_form":"tablet","unit":"tablet","category":"ทางเดินอาหาร","atc_code":"A03FA01","reorder_level":100},{"sku":"HYOS10","generic_name":"Hyoscine butylbromide","strength":"10 mg","dosage_form":"tablet","unit":"tablet","category":"ทางเดินอาหาร","atc_code":"A03BB01","reorder_level":100},{"sku":"LOPE2","generic_name":"Loperamide","strength":"2 mg","dosage_form":"capsule","unit":"capsule","category":"ทางเดินอาหาร","atc_code":"A07DA03","reorder_level":100},{"sku":"CHAR250","generic_name":"Activated charcoal","strength":"250 mg","dosage_form":"capsule","unit":"capsule","category":"ทางเดินอาหาร","atc_code":"A07BA01","reorder_level":100},{"sku":"BISA5","generic_name":"Bisacodyl","strength":"5 mg","dosage_form":"tablet","unit":"tablet","category":"ทางเดินอาหาร","atc_code":"A06AB02","reorder_level":100},{"sku":"SENNA75","generic_name":"Sennosides","strength":"7.5 mg","dosage_form":"tablet","unit":"tablet","category":"ทางเดินอาหาร","atc_code":"A06AB06","reorder_level":100},{"sku":"LACTU-S","generic_name":"Lactulose","strength":"10 g/15 mL, 60 mL","dosage_form":"oral solution","unit":"bottle","category":"ทางเดินอาหาร","atc_code":"A06AD11","reorder_level":10},{"sku":"CETI10","generic_name":"Cetirizine","strength":"10 mg","dosage_form":"tablet","unit":"tablet","category":"แก้แพ้","atc_code":"R06AE07","reorder_level":300},{"sku":"LORA10","generic_name":"Loratadine","strength":"10 mg","dosage_form":"tablet","unit":"tablet","category":"แก้แพ้","atc_code":"R06AX13","reorder_level":300},{"sku":"CPM4","generic_name":"Chlorpheniramine","strength":"4 mg","dosage_form":"tablet","unit":"tablet","category":"แก้แพ้","atc_code":"R06AB04","reorder_level":500},{"sku":"FEXO180","generic_name":"Fexofenadine","strength":"180 mg","dosage_form":"tablet","unit":"tablet","category":"แก้แพ้","atc_code":"R06AX26","reorder_level":100},{"sku":"HYDROX10","generic_name":"Hydroxyzine","strength":"10 mg","dosage_form":"tablet","unit":"tablet","category":"แก้แพ้","atc_code":"N05BB01","reorder_level":100},{"sku":"SALB-INH","generic_name":"Salbutamol","strength":"100 mcg/dose, 200 doses","dosage_form":"inhaler","unit":"inhaler","category":"ทางเดินหายใจ","atc_code":"R03AC02","reorder_level":10},{"sku":"BUDE-INH","generic_name":"Budesonide","strength":"200 mcg/dose, 200 doses","dosage_form":"inhaler","unit":"inhaler","category":"ทางเดินหายใจ","atc_code":"R03BA02","reorder_level":5},{"sku":"MONT10","generic_name":"Montelukast","strength":"10 mg","dosage_form":"tablet","unit":"tablet","category":"ทางเดินหายใจ","atc_code":"R03DC03","reorder_level":60},{"sku":"DEXTRO-S","generic_name":"Dextromethorphan","strength":"15 mg/5 mL, 60 mL","dosage_form":"syrup","unit":"bottle","category":"ทางเดินหายใจ","atc_code":"R05DA09","reorder_level":20},{"sku":"BROM8","generic_name":"Bromhexine","strength":"8 mg","dosage_form":"tablet","unit":"tablet","category":"ทางเดินหายใจ","atc_code":"R05CB02","reorder_level":200},{"sku":"AMBRO30","generic_name":"Ambroxol","strength":"30 mg","dosage_form":"tablet","unit":"tablet","category":"ทางเดินหายใจ","atc_code":"R05CB06","reorder_level":200},{"sku":"GUAI-S","generic_name":"Guaifenesin","strength":"100 mg/5 mL, 60 mL","dosage_form":"syrup","unit":"bottle","category":"ทางเดินหายใจ","atc_code":"R05CA03","reorder_level":10},{"sku":"NAC200","generic_name":"Acetylcysteine","strength":"200 mg","dosage_form":"powder for oral solution","unit":"sachet","category":"ทางเดินหายใจ","atc_code":"R05CB01","reorder_level":100},{"sku":"FLUTI-NS","generic_name":"Fluticasone propionate","strength":"50 mcg/spray, 120 sprays","dosage_form":"nasal spray","unit":"bottle","category":"ทางเดินหายใจ","atc_code":"R01AD08","reorder_level":5},{"sku":"HC1-C","generic_name":"Hydrocortisone","strength":"1%, 15 g","dosage_form":"cream","unit":"tube","category":"ผิวหนัง","atc_code":"D07AA02","reorder_level":10},{"sku":"BETA-C","generic_name":"Betamethasone valerate","strength":"0.1%, 15 g","dosage_form":"cream","unit":"tube","category":"ผิวหนัง","atc_code":"D07AC01","reorder_level":10},{"sku":"TA-C","generic_name":"Triamcinolone acetonide","strength":"0.1%, 15 g","dosage_form":"cream","unit":"tube","category":"ผิวหนัง","atc_code":"D07AB09","reorder_level":10},{"sku":"MUPI-O","generic_name":"Mupirocin","strength":"2%, 15 g","dosage_form":"ointment","unit":"tube","category":"ผิวหนัง","atc_code":"D06AX09","reorder_level":10},{"sku":"PVP-I","generic_name":"Povidone-iodine","strength":"10%, 30 mL","dosage_form":"solution","unit":"bottle","category":"ผิวหนัง","atc_code":"D08AG02","reorder_level":20},{"sku":"CAP-ED","generic_name":"Chloramphenicol","strength":"0.5%, 10 mL","dosage_form":"eye drops","unit":"bottle","category":"ตาและหู","atc_code":"S01AA01","reorder_level":10},{"sku":"TOBRA-ED","generic_name":"Tobramycin","strength":"0.3%, 5 mL","dosage_form":"eye drops","unit":"bottle","category":"ตาและหู","atc_code":"S01AA12","reorder_level":5},{"sku":"OFLO-EAR","generic_name":"Ofloxacin","strength":"0.3%, 5 mL","dosage_form":"ear drops","unit":"bottle","category":"ตาและหู","atc_code":"S02AA16","reorder_level":5},{"sku":"VITC500","generic_name":"Ascorbic acid","strength":"500 mg","dosage_form":"tablet","unit":"tablet","category":"วิตามินและเกลือแร่","atc_code":"A11GA01","reorder_level":300},{"sku":"FOLIC5","generic_name":"Folic acid","strength":"5 mg","dosage_form":"tablet","unit":"tablet","category":"วิตามินและเกลือแร่","atc_code":"B03BB01","reorder_level":200},{"sku":"FESO4","generic_name":"Ferrous sulfate","strength":"200 mg","dosage_form":"tablet","unit":"tablet","category":"วิตามินและเกลือแร่","atc_code":"B03AA07","reorder_level":300},{"sku":"CACO3","generic_name":"Calcium carbonate","strength":"1,250 mg","dosage_form":"tablet","unit":"tablet","category":"วิตามินและเกลือแร่","atc_code":"A12AA04","reorder_level":200},{"sku":"VITB1","generic_name":"Thiamine","strength":"100 mg","dosage_form":"tablet","unit":"tablet","category":"วิตามินและเกลือแร่","atc_code":"A11DA01","reorder_level":200},{"sku":"AMIT10","generic_name":"Amitriptyline","strength":"10 mg","dosage_form":"tablet","unit":"tablet","category":"ระบบประสาท","atc_code":"N06AA09","reorder_level":100},{"sku":"FLUN5","generic_name":"Flunarizine","strength":"5 mg","dosage_form":"capsule","unit":"capsule","category":"ระบบประสาท","atc_code":"N07CA03","reorder_level":100},{"sku":"BETAH6","generic_name":"Betahistine","strength":"6 mg","dosage_form":"tablet","unit":"tablet","category":"ระบบประสาท","atc_code":"N07CA01","reorder_level":100},{"sku":"GABA300","generic_name":"Gabapentin","strength":"300 mg","dosage_form":"capsule","unit":"capsule","category":"ระบบประสาท","atc_code":"N02BF01","reorder_level":100},{"sku":"FLUOX20","generic_name":"Fluoxetine","strength":"20 mg","dosage_form":"capsule","unit":"capsule","category":"ระบบประสาท","atc_code":"N06AB03","reorder_level":60},{"sku":"SERT50","generic_name":"Sertraline","strength":"50 mg","dosage_form":"tablet","unit":"tablet","category":"ระบบประสาท","atc_code":"N06AB06","reorder_level":60},{"sku":"METHO500","generic_name":"Methocarbamol","strength":"500 mg","dosage_form":"tablet","unit":"tablet","category":"ข้อและกล้ามเนื้อ","atc_code":"M03BA03","reorder_level":100},{"sku":"ORPH-P","generic_name":"Orphenadrine/Paracetamol","strength":"35/450 mg","dosage_form":"tablet","unit":"tablet","category":"ข้อและกล้ามเนื้อ","atc_code":"M03BC51","reorder_level":100},{"sku":"COLCH06","generic_name":"Colchicine","strength":"0.6 mg","dosage_form":"tablet","unit":"tablet","category":"ข้อและกล้ามเนื้อ","atc_code":"M04AC01","reorder_level":60},{"sku":"ALLO100","generic_name":"Allopurinol","strength":"100 mg","dosage_form":"tablet","unit":"tablet","category":"ข้อและกล้ามเนื้อ","atc_code":"M04AA01","reorder_level":200}]}</script>
+  <script>
+    const byId = (id) => document.getElementById(id);
+    const search = byId('search');
+    const categoryFilter = byId('category');
+    const formFilter = byId('dosage-form');
+    const rows = byId('drug-rows');
+    const previous = byId('previous');
+    const next = byId('next');
+    const pageSize = 12;
+    const number = new Intl.NumberFormat('th-TH');
+    const collator = new Intl.Collator('th');
+    const searchText = (text) => text.normalize('NFKC').toLowerCase().trim();
+    const unitLabels = new Map([
+      ['tablet', 'เม็ด'], ['capsule', 'แคปซูล'], ['bottle', 'ขวด'],
+      ['tube', 'หลอด'], ['inhaler', 'อัน'], ['sachet', 'ซอง'],
+    ]);
+    const columns = [
+      { key: 'sku', className: 'sku' },
+      { key: 'generic_name', className: 'drug-name' },
+      { key: 'strength' },
+      { key: 'dosage_form' },
+      { key: 'category' },
+      { key: 'atc_code', className: 'code' },
+      { key: 'reorder_level', className: 'quantity' },
+    ];
+
+    async function loadCatalog() {
+      // A bundled snapshot also lets this page open directly from the file system.
+      if (!['http:', 'https:'].includes(location.protocol)) {
+        return JSON.parse(byId('bundled-data').textContent);
+      }
+      const response = await fetch('./drugs.json', { cache: 'no-cache' });
+      if (!response.ok) throw new Error(`Could not load drugs.json (HTTP ${response.status})`);
+      return response.json();
+    }
+
+    function addOptions(select, values) {
+      select.append(...values.map((value) => new Option(value, value)));
+    }
+
+    function createRow(item) {
+      const row = document.createElement('tr');
+      for (const { key, className } of columns) {
+        const cell = row.insertCell();
+        if (className) cell.className = className;
+        cell.textContent = key === 'reorder_level'
+          ? `${number.format(item.reorder_level)} ${unitLabels.get(item.unit) ?? item.unit}`
+          : item[key];
+      }
+      return row;
+    }
+
+    function renderCatalog(catalog) {
+      const items = catalog.items;
+      if (!Array.isArray(items)) throw new Error('Expected catalog.items to be an array');
+      const categories = new Map();
+      const names = new Set();
+      const forms = new Set();
+      const skus = new Set();
+      const searchable = items.map((item) => {
+        categories.set(item.category, (categories.get(item.category) ?? 0) + 1);
+        names.add(searchText(item.generic_name));
+        forms.add(item.dosage_form);
+        skus.add(item.sku);
+        const searchFields = [item.sku, item.generic_name, item.atc_code].map(searchText);
+        return { item, searchFields };
+      });
+
+      if (catalog.meta?.title) byId('dashboard-title').textContent = catalog.meta.title;
+      byId('metric-skus').textContent = number.format(skus.size);
+      byId('metric-names').textContent = number.format(names.size);
+      byId('metric-categories').textContent = number.format(categories.size);
+      byId('metric-forms').textContent = number.format(forms.size);
+      addOptions(categoryFilter, [...categories.keys()].sort(collator.compare));
+      addOptions(formFilter, [...forms].sort(collator.compare));
+
+      let page = 1;
+      let pageCount = 1;
+      const bars = new Map();
+      const ranked = [...categories].sort(([labelA, countA], [labelB, countB]) => (
+        countB - countA || collator.compare(labelA, labelB)
+      ));
+      const maxCount = ranked[0]?.[1] ?? 1;
+      for (const [label, count] of ranked) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'bar';
+        button.setAttribute('aria-pressed', 'false');
+        button.setAttribute('aria-label', `${label} ${number.format(count)} รายการ`);
+        button.innerHTML = '<span class="bar-heading"><span></span><span class="bar-number"></span></span>'
+          + '<span class="bar-track" aria-hidden="true"><span class="bar-fill"></span></span>';
+        button.querySelector('.bar-heading > span').textContent = label;
+        button.querySelector('.bar-number').textContent = number.format(count);
+        button.querySelector('.bar-fill').style.width = `${count / maxCount * 100}%`;
+        button.addEventListener('click', () => {
+          categoryFilter.value = categoryFilter.value === label ? '' : label;
+          resetPage();
+        });
+        bars.set(label, button);
+        byId('category-chart').append(button);
+      }
+
+      function updateTable() {
+        const query = searchText(search.value);
+        const category = categoryFilter.value;
+        const form = formFilter.value;
+        const matching = searchable.filter(({ item, searchFields }) => (
+          (!category || item.category === category)
+          && (!form || item.dosage_form === form)
+          && (!query || searchFields.some((field) => field.includes(query)))
+        ));
+        for (const [label, button] of bars) button.setAttribute('aria-pressed', String(label === category));
+        pageCount = Math.max(1, Math.ceil(matching.length / pageSize));
+        page = Math.min(page, pageCount);
+        const start = (page - 1) * pageSize;
+        const end = Math.min(start + pageSize, matching.length);
+        rows.replaceChildren(...matching.slice(start, end).map(({ item }) => createRow(item)));
+        if (!matching.length) {
+          const message = rows.insertRow().insertCell();
+          message.colSpan = columns.length;
+          message.className = 'table-empty';
+          message.textContent = 'ไม่พบรายการที่ตรงกัน ลองเปลี่ยนคำค้นหาหรือล้างตัวกรอง';
+        }
+        byId('result-count').textContent = matching.length
+          ? `แสดง ${number.format(start + 1)}–${number.format(end)} จาก ${number.format(matching.length)} รายการ`
+          : 'พบ 0 รายการ';
+        byId('page-number').textContent = `หน้า ${page} / ${pageCount}`;
+        previous.disabled = page <= 1;
+        next.disabled = page >= pageCount;
+      }
+
+      function resetPage() {
+        page = 1;
+        updateTable();
+      }
+
+      search.addEventListener('input', resetPage);
+      categoryFilter.addEventListener('change', resetPage);
+      formFilter.addEventListener('change', resetPage);
+      byId('filters').addEventListener('submit', (event) => {
+        event.preventDefault();
+        resetPage();
+      });
+      byId('filters').addEventListener('reset', (event) => {
+        event.preventDefault();
+        search.value = categoryFilter.value = formFilter.value = '';
+        resetPage();
+        search.focus();
+      });
+      previous.addEventListener('click', () => {
+        if (page > 1) { page -= 1; updateTable(); }
+      });
+      next.addEventListener('click', () => {
+        if (page < pageCount) { page += 1; updateTable(); }
+      });
+      updateTable();
+      byId('dashboard').hidden = false;
+    }
+
+    loadCatalog().then(renderCatalog).catch((error) => {
+      console.error(error);
+      byId('load-error').hidden = false;
+    });
+  </script>
+</body>
+</html>
